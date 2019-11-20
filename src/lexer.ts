@@ -1,13 +1,13 @@
 const MAX = 32;
 const WORD = '[0-9a-zA-Z_\\.~@$]';
 
-class Lexer {
+export class Lexer {
     private regexes: string[] = [];
     private prior = 0;
-    private prior_dict: Record<string, number> = {};
-    private rule_dict: Record<string, number> = {};
-    private pair_dict = {'(': ')', '[': ']', '{': '}'};
+    readonly prior_dict: Map<string, number> = new Map();
+    readonly rule_dict: Map<string, number> = new Map();
     private full_reg: RegExp;
+    readonly pair_dict: Map<string, string> = new Map();
 
     constructor() {
         this.register(['{', '\\[', '\\('], 1);
@@ -37,6 +37,9 @@ class Lexer {
         this.register(['not'], _not[0], _not[1]);
         this.register(['while', 'if', 'elif'], _condition[0], _condition[1]);
         this.full_reg = new RegExp(this.regexes.join('|'), 'g');
+        this.pair_dict.set('(', ')');
+        this.pair_dict.set('[', ']');
+        this.pair_dict.set('{', '}');
     }
 
     private register(ls: string[], rule: number, prior?: number | undefined): [number, number]  {
@@ -45,10 +48,10 @@ class Lexer {
             prior = this.prior;
             this.prior += 1;
         }
-        for (var c of ls) {
+        for (let c of ls) {
             let txt = c.replace('\\', '');
-            this.rule_dict[txt] = rule;
-            this.prior_dict[txt] = prior;
+            this.rule_dict.set(txt, rule);
+            this.prior_dict.set(txt, prior);
         }
         return [rule, prior];
     }
@@ -56,33 +59,43 @@ class Lexer {
     public tokens(content: string, beg: number, end: number): Token[] {
         let curr = beg;
         let res: Token[] = [];
-        while (curr < end) {
-            let match = this.full_reg.exec(content.slice(curr));
-            if (!match) {
-                break;
-            }
-            let txt = match.input;
+        let match;
+        while (match = this.full_reg.exec(content)) {
+            let txt = match[0];
             let beg = match.index, end = beg + txt.length;
-            let region = [beg, end];
-            let token = new Token(txt, this.prior_dict.get(txt, MAX), this.rule_dict.get(txt, 0))
-            token.rg = rg
-            if curr <= end:
-                res.append(token)
+            let token = new Token(txt, this.prior_dict.get(txt) || MAX, this.rule_dict.get(txt) || 0);
+            token.setRegion(beg, end);
+            if (curr <= end) {
+                res.push(token);
+            }
         }
-        return res
+        return res;
     }
 }
 
-class Token {
-    private txt: string;
-    private prior: number;
-    private rule: number;
-    private region: [number, number];
+export class Token {
+    readonly txt: string;
+    readonly prior: number;
+    readonly rule: number;
+    beg: number = 0;
+    end: number = 0;
     
     constructor(txt: string, prior: number, rule: number) {
         this.txt = txt;
         this.prior = prior;
         this.rule = rule;
-        this.region = [0, 0];
+    }
+
+    public setRegion(beg: number, end: number) {
+        this.beg = beg;
+        this.end = end;
+    }
+
+    public toString(): string {
+        return this.txt === '\n' ? '\\n' : this.txt;
+    }
+
+    public length(): number {
+        return this.end - this.beg;
     }
 }

@@ -17,7 +17,7 @@
 		"commands": [
 			{
 				"command": "extension.helloWorld",
-				"title": "Hello World What's up man"
+				"title": "ts"
 			}
 		]
 	},
