@@ -1,8 +1,9 @@
 {
 	"name": "any-swap",
 	"displayName": "Any Swap",
-	"description": "",
-	"version": "0.0.1",
+	"description": "Swap parameters, lines, even complicated expressions from current cursor.",
+	"publisher": "wolray",
+	"version": "0.1.0",
 	"engines": {
 		"vscode": "^1.40.0"
 	},
