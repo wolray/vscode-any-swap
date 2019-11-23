@@ -10,14 +10,19 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.helloWorld"
+		"onCommand:anySwap.forward",
+		"onCommand:anySwap.backward"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "extension.helloWorld",
-				"title": "ts"
+				"command": "anySwap.forward",
+				"title": "Any Swap: Forward"
+			},
+			{
+				"command": "anySwap.backward",
+				"title": "Any Swap: Backward"
 			}
 		]
 	},

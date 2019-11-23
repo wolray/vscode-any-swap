@@ -1,4 +1,4 @@
-const MAX = 32;
+const MAX = 64;
 const WORD = '[0-9a-zA-Z_\\.~@$]';
 
 export class Lexer {
@@ -16,26 +16,26 @@ export class Lexer {
         this.register(['\n'], 3);
         const _return = this.register([], 1);
         this.register([','], 3);
-        this.register([':', '=>', '<='], 3);
+        this.register([':', '=>', '->'], 3);
         const _assign = this.register(['\\+=', '-=', '\\*=', '%=', '&=', '\\|=', '^='], 3);
         const _condition = this.register([], 1);
         const _or = this.register(['\\|\\|'], 3);
         const _and = this.register(['&&'], 3);
         const _not = this.register(['!'], 1);
-        this.register(['==', '!=', '~='], 3);
-        this.register(['='], _assign[0], _assign[1]);
+        this.register(['===', '!==', '==', '!=', '~='], 3);
+        this.register(['='], ..._assign);
         const _compare = this.register(['<=', '>='], 3);
         this.register(['&', '\\|', '\\^'], 3);
         this.register(['\\+', '-'], 3);
         this.register(['\\*', '/', '%'], 3);
         this.regexes = this.regexes.concat(['"[^"]*?"', "'[^']*?'", `<${WORD}*?>`]);
-        this.register(['<', '>'], _compare[0], _compare[1]);
+        this.register(['<', '>'], ..._compare);
         this.regexes.push(`${WORD}+`);
-        this.register(['return'], _return[0], _return[1]);
-        this.register(['or'], _or[0], _or[1]);
-        this.register(['and'], _and[0], _and[1]);
-        this.register(['not'], _not[0], _not[1]);
-        this.register(['while', 'if', 'elif'], _condition[0], _condition[1]);
+        this.register(['return'], ..._return);
+        this.register(['or'], ..._or);
+        this.register(['and'], ..._and);
+        this.register(['not'], ..._not);
+        this.register(['while', 'if', 'elif'], ..._condition);
         this.full_reg = new RegExp(this.regexes.join('|'), 'g');
         this.pair_dict.set('(', ')');
         this.pair_dict.set('[', ']');
@@ -56,18 +56,23 @@ export class Lexer {
         return [rule, prior];
     }
 
-    public tokens(content: string, beg: number, end: number): Token[] {
-        let curr = beg;
+    public tokens(content: string): Token[] {
         let res: Token[] = [];
         let match;
         while (match = this.full_reg.exec(content)) {
             let txt = match[0];
             let beg = match.index, end = beg + txt.length;
-            let token = new Token(txt, this.prior_dict.get(txt) || MAX, this.rule_dict.get(txt) || 0);
-            token.setRegion(beg, end);
-            if (curr <= end) {
-                res.push(token);
+            let prior = this.prior_dict.get(txt);
+            if (prior === undefined) {
+                prior = MAX;
             }
+            let rule = this.rule_dict.get(txt);
+            if (rule === undefined) {
+                rule = 0;
+            }
+            let token = new Token(txt, prior, rule);
+            token.setRegion(beg, end);
+            res.push(token);
         }
         return res;
     }

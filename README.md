@@ -1,65 +1,68 @@
-# any-swap README
+# Any Swap For VS Code
 
-This is the README for your extension "any-swap". After writing up a brief description, we recommend including the following sections.
+Swap parameters, lines, even complicated expressions from current cursor.
+
+Behaves just like `Move-Element-Left/Right` in IntelliJ's IDEs, but more intelligently.
+It is based on a general Abstract-Syntax-Tree (AST) analyzer that enables user to swap expressions recursively while maintaining a correct operator precedence.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Place your cursor (|) on the begin/end of a word/paren, then trigger the command to swap things.
 
-For example if there is an image subfolder under your extension project workspace:
+**Parameters:**
+```
+func(a|, b)         => func(b, a|)         => func(|a, b)
+func(int a|, int b) => func(int b, int a|) => func(|int a, int b)
+```
 
-\!\[feature X\]\(images/feature-x.png\)
+**Lines:**
+```
+a|, b   =>  b, a|   =>  c, d
+c, d        c, d        b, a|
+```
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+**Math expressions:**
+```
+a| * b + c   => b * a| + c   => c + b * a|
+(a| + b) * c => (b + a|) * c => c * (b + a)|
+```
 
-## Requirements
+**Expressions with functions:**
+```
+func(a| + b, c) * d => func(b + a|, c) * d  => func(c, b + a|) * d   => d * func(c, b + a)|
+```
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+**Expressions with nested functions:**
+```
+func(a().b(c| + d), f)  => func(a().b(d + c|), f)   => func(f, a().b(d + c)|)
+```
 
-## Extension Settings
+**Logic expressions:**
+```
+a| and b or c   => b and a| or c    => c or b and a|
+if a| and b 	=> if b and a|
+```
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+**Array expressions:**
+```
+a[0|][1]        => a[1][0|]
+a[b[c| + 1]][0] => a[b[1 + c|]][0] => a[0][b[1 + c]|]
+```
 
-For example:
+**Statements:**
+```
+a = 1|; b = 2; 	=> b = 2; a = 1;|
+return a|, b 	=> return b, a|
+```
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
+**Cross-line expressions:**
+```
+func(a|, => func(b,
+    b)          a|)
+```
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.1.0
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+First publish.
