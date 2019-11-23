@@ -3,7 +3,7 @@
 	"displayName": "Any Swap",
 	"description": "Swap parameters, lines, even complicated expressions from current cursor.",
 	"publisher": "wolray",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"engines": {
 		"vscode": "^1.40.0"
 	},
@@ -11,7 +11,7 @@
 		"Other"
 	],
 	"homepage": "https://github.com/wolray/vscode-any-swap",
-  	"keywords": [
+	"keywords": [
 		"swap",
 		"transpose",
 		"expressions"
@@ -39,13 +39,13 @@
 		"keybindings": [
 			{
 				"key": "alt+oem_4",
-			  	"command": "anySwap.backward",
-			  	"when": "editorTextFocus && !editorReadonly"
+				"command": "anySwap.backward",
+				"when": "editorTextFocus && !editorReadonly"
 			},
 			{
 				"key": "alt+oem_6",
-			  	"command": "anySwap.forward",
-			  	"when": "editorTextFocus && !editorReadonly"
+				"command": "anySwap.forward",
+				"when": "editorTextFocus && !editorReadonly"
 			}
 		]
 	},
