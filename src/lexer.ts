@@ -12,8 +12,8 @@ export class Lexer {
     constructor() {
         this.register(['{', '\\[', '\\('], 1);
         this.register(['\\)', '\\]', '}'], 2);
-        this.register([';'], 2);
         this.register(['\n'], 3);
+        this.register([';'], 2);
         const _return = this.register([], 1);
         this.register([','], 3);
         this.register([':', '=>', '->'], 3);
@@ -21,8 +21,8 @@ export class Lexer {
         const _condition = this.register([], 1);
         const _or = this.register(['\\|\\|'], 3);
         const _and = this.register(['&&'], 3);
-        const _not = this.register(['!'], 1);
         this.register(['===', '!==', '==', '!=', '~='], 3);
+        const _not = this.register(['!'], 1);
         this.register(['='], ..._assign);
         const _compare = this.register(['<=', '>='], 3);
         this.register(['&', '\\|', '\\^'], 3);
@@ -43,13 +43,13 @@ export class Lexer {
     }
 
     private register(ls: string[], rule: number, prior?: number | undefined): [number, number]  {
-        this.regexes = this.regexes.concat(ls);
+        this.regexes.push(...ls);
         if (prior === undefined) {
             prior = this.prior;
             this.prior += 1;
         }
         for (let c of ls) {
-            let txt = c.replace('\\', '');
+            let txt = c.split('\\').join('');
             this.rule_dict.set(txt, rule);
             this.prior_dict.set(txt, prior);
         }

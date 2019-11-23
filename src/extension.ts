@@ -5,7 +5,6 @@ import {Lexer, Token} from './lexer';
 import { AnySwap } from './any-swap';
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('activated');
 	let lexer = new Lexer();
 	context.subscriptions.push(vscode.commands.registerCommand('anySwap.forward', () => swap(lexer, true)));
 	context.subscriptions.push(vscode.commands.registerCommand('anySwap.backward', () => swap(lexer, false)));

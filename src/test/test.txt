@@ -1,0 +1,26 @@
+func(a, b)
+func(int a, int b)
+
+a, b
+c, d
+
+a * b + c
+(a + b) * c
+a == b
+a != c
+
+func(a + b, c) * d
+func(a().b(c + d), f)
+
+a and b or c
+a && b || c
+if a and b
+
+a[0][1]
+a[b[1 + c]][0]
+
+a = b; b = c;
+return a, b;
+
+func(a,
+    b)

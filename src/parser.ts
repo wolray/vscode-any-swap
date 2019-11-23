@@ -153,7 +153,6 @@ export class Parser {
     readonly lexer: Lexer;
     readonly root: ParseNode = new ParseNode(new Token('?', -1, -1));
     readonly wait: [string, ParseNode][] = [];
-    readonly adders: CallableFunction[] = [this.add0, this.add1, this.add2, this.add3];
     private curr: ParseNode;
 
     constructor(lexer: Lexer) {
