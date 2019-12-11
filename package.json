@@ -3,7 +3,7 @@
 	"displayName": "Any Swap",
 	"description": "Swap parameters, lines, even complicated expressions from current cursor.",
 	"publisher": "wolray",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"engines": {
 		"vscode": "^1.40.0"
 	},
