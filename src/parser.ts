@@ -1,10 +1,10 @@
-import {Token, Lexer} from './lexer';
+import { Token, Lexer } from './lexer';
 import { threadId } from 'worker_threads';
 
 export class ParseNode {
     tokens: Token[];
     parent: ParseNode | undefined = undefined;
-    sub_nodes: ParseNode[] = [];
+    subNodes: ParseNode[] = [];
     index: number = 0;
     prior: number;
     rule: number;
@@ -24,7 +24,7 @@ export class ParseNode {
     }
 
     public sub(index: number): ParseNode | undefined {
-        return this.sub_nodes.length > index ? this.sub_nodes[index] : undefined;
+        return this.subNodes.length > index ? this.subNodes[index] : undefined;
     }
 
     public cmp(node: ParseNode): number {
@@ -33,8 +33,8 @@ export class ParseNode {
 
     public add(node: ParseNode) {
         node.parent = this;
-        node.index = this.sub_nodes.length;
-        this.sub_nodes.push(node);
+        node.index = this.subNodes.length;
+        this.subNodes.push(node);
     }
 
     public insert(node: ParseNode) {
@@ -46,34 +46,34 @@ export class ParseNode {
     }
 
     public merge(node: ParseNode) {
-        this.tokens = this.tokens.concat(node.tokens);
+        this.tokens.push(...node.tokens);
         this.prior = node.prior;
         this.rule = node.rule & 1;
         this.end = node.end;
     }
 
     public pop(): ParseNode | undefined {
-        return this.sub_nodes.length > 0 ? this.sub_nodes.pop() : undefined;
+        return this.subNodes.length > 0 ? this.subNodes.pop() : undefined;
     }
 
     public bound(): [number, number] {
-        if (this.sub_nodes.length === 0) {
+        if (this.subNodes.length === 0) {
             return [this.beg, this.end];
         }
-        let beg = Math.min(this.beg, this.sub_nodes[0].bound()[0]);
-        let end = Math.max(this.end, this.sub_nodes[this.sub_nodes.length - 1].bound()[1]);
+        let beg = Math.min(this.beg, this.subNodes[0].bound()[0]);
+        let end = Math.max(this.end, this.subNodes[this.subNodes.length - 1].bound()[1]);
         return [beg, end];
     }
 
-    public get_prev(): ParseNode | undefined {
+    public getPrev(): ParseNode | undefined {
         if (this.index > 0 && this.parent) {
             return this.parent.sub(this.index - 1);
         }
         return undefined;
     }
 
-    public get_next(): ParseNode | undefined {
-        if (this.parent && this.index < this.parent.sub_nodes.length - 1) {
+    public getNext(): ParseNode | undefined {
+        if (this.parent && this.index < this.parent.subNodes.length - 1) {
             return this.parent.sub(this.index + 1);
         }
         return undefined;
@@ -84,10 +84,10 @@ export class ParseNode {
         if (!this.parent) {
             return [undefined, this];
         }
-        let left = this.get_prev();
+        let left = this.getPrev();
         if (left) {
             if (left.cmp(this.parent) === 0 && this.parent.rule === 3) {
-                left = left.sub(left.sub_nodes.length - 1);
+                left = left.sub(left.subNodes.length - 1);
             }
             return [left, this];
         }
@@ -99,9 +99,9 @@ export class ParseNode {
         if (!this.parent) {
             return [this, undefined];
         }
-        let right = this.get_next();
-        if (right) { 
-            return [this, right]; 
+        let right = this.getNext();
+        if (right) {
+            return [this, right];
         }
         let res = this.parent.right();
         if (this.parent.parent && this.parent.rule === 3) {
@@ -117,10 +117,10 @@ export class ParseNode {
         if (this.parent && this.beg <= pos && pos <= this.end) {
             res = this;
         }
-        if (this.sub_nodes.length === 0) {
+        if (this.subNodes.length === 0) {
             return res;
         }
-        for (let n of this.sub_nodes) {
+        for (let n of this.subNodes) {
             let found = n.locate(pos);
             if (found) {
                 res = found;
@@ -130,18 +130,18 @@ export class ParseNode {
     }
 
     public render(): string {
-        return this._print([], [], []);
+        return this.printTo([], [], []);
     }
 
-    public _print(res: string[], p1: string[], p2: string[]): string {
+    public printTo(res: string[], p1: string[], p2: string[]): string {
         res.push(...p1, this.toString(), '\n');
-        let n = this.sub_nodes.length;
+        let n = this.subNodes.length;
         let i = 0;
-        for (let child of this.sub_nodes) {
+        for (let child of this.subNodes) {
             if (i < n - 1) {
-                child._print(res, p2.concat(['├─']), p2.concat(['│ ']));
+                child.printTo(res, p2.concat(['├─']), p2.concat(['│ ']));
             } else {
-                child._print(res, p2.concat(['└─']), p2.concat(['  ']));
+                child.printTo(res, p2.concat(['└─']), p2.concat(['  ']));
             }
             i++;
         }
@@ -172,7 +172,6 @@ export class Parser {
         } else if (token.rule === 3) {
             this.add3(next);
         }
-        // console.log('add_', this.root.render());
     }
 
     public add0(node: ParseNode) {
@@ -190,7 +189,7 @@ export class Parser {
     public add1(node: ParseNode) {
         this.add0(node);
         let txt = node.tokens[0].txt;
-        let back = this.lexer.pair_dict.get(txt);
+        let back = this.lexer.pairMap.get(txt);
         if (back) {
             this.wait.push([back, this.curr]);
         }

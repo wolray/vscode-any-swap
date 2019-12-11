@@ -2,12 +2,12 @@ const MAX = 64;
 const WORD = '[0-9a-zA-Z_\\.~@$]';
 
 export class Lexer {
-    private regexes: string[] = [];
+    readonly priorMap: Map<string, number> = new Map();
+    readonly ruleMap: Map<string, number> = new Map();
+    readonly pairMap: Map<string, string> = new Map();
+    readonly regexes: string[] = [];
     private prior = 0;
-    readonly prior_dict: Map<string, number> = new Map();
-    readonly rule_dict: Map<string, number> = new Map();
-    private full_reg: RegExp;
-    readonly pair_dict: Map<string, string> = new Map();
+    private fullReg: RegExp;
 
     constructor() {
         this.register(['{', '\\[', '\\('], 1);
@@ -28,7 +28,7 @@ export class Lexer {
         this.register(['&', '\\|', '\\^'], 3);
         this.register(['\\+', '-'], 3);
         this.register(['\\*', '/', '%'], 3);
-        this.regexes = this.regexes.concat(['"[^"]*?"', "'[^']*?'", `<${WORD}*?>`]);
+        this.regexes.push('"[^"]*?"', "'[^']*?'", `<${WORD}*?>`);
         this.register(['<', '>'], ..._compare);
         this.regexes.push(`${WORD}+`);
         this.register(['return'], ..._return);
@@ -36,13 +36,13 @@ export class Lexer {
         this.register(['and'], ..._and);
         this.register(['not'], ..._not);
         this.register(['while', 'if', 'elif'], ..._condition);
-        this.full_reg = new RegExp(this.regexes.join('|'), 'g');
-        this.pair_dict.set('(', ')');
-        this.pair_dict.set('[', ']');
-        this.pair_dict.set('{', '}');
+        this.fullReg = new RegExp(this.regexes.join('|'), 'g');
+        this.pairMap.set('(', ')');
+        this.pairMap.set('[', ']');
+        this.pairMap.set('{', '}');
     }
 
-    private register(ls: string[], rule: number, prior?: number | undefined): [number, number]  {
+    private register(ls: string[], rule: number, prior?: number): [number, number] {
         this.regexes.push(...ls);
         if (prior === undefined) {
             prior = this.prior;
@@ -50,8 +50,8 @@ export class Lexer {
         }
         for (let c of ls) {
             let txt = c.split('\\').join('');
-            this.rule_dict.set(txt, rule);
-            this.prior_dict.set(txt, prior);
+            this.ruleMap.set(txt, rule);
+            this.priorMap.set(txt, prior);
         }
         return [rule, prior];
     }
@@ -59,14 +59,14 @@ export class Lexer {
     public tokens(content: string): Token[] {
         let res: Token[] = [];
         let match;
-        while (match = this.full_reg.exec(content)) {
+        while (match = this.fullReg.exec(content)) {
             let txt = match[0];
             let beg = match.index, end = beg + txt.length;
-            let prior = this.prior_dict.get(txt);
+            let prior = this.priorMap.get(txt);
             if (prior === undefined) {
                 prior = MAX;
             }
-            let rule = this.rule_dict.get(txt);
+            let rule = this.ruleMap.get(txt);
             if (rule === undefined) {
                 rule = 0;
             }
@@ -84,7 +84,7 @@ export class Token {
     readonly rule: number;
     beg: number = 0;
     end: number = 0;
-    
+
     constructor(txt: string, prior: number, rule: number) {
         this.txt = txt;
         this.prior = prior;

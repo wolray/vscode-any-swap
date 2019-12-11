@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
-import {Lexer, Token} from './lexer';
-import {ParseNode, Parser} from './parser';
+import { Lexer, Token } from './lexer';
+import { ParseNode, Parser } from './parser';
 
 export class AnySwap {
-    private editor: vscode.TextEditor;
-    private doc: vscode.TextDocument;
-    private lexer: Lexer;
+    readonly editor: vscode.TextEditor;
+    readonly doc: vscode.TextDocument;
+    readonly lexer: Lexer;
 
     constructor(editor: vscode.TextEditor, lexer: Lexer) {
         this.editor = editor;
@@ -59,11 +59,7 @@ export class AnySwap {
         let lf = pair[0], rt = pair[1];
         // console.log('pair', lf, rt);
         if (lf && rt) {
-            if (lf.rule === 2) {
-                if (rt.rule !== 2) {
-                    return;
-                }
-            } else if (rt.rule === 2) {
+            if ((lf.rule === 2) !== (rt.rule === 2)) {
                 return;
             }
             let bd1 = lf.bound(), b1 = bd1[0], e1 = bd1[1];
